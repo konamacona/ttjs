@@ -15,6 +15,8 @@ const MAX_JUMP_HEIGHT = 10;
 
 const BOTTOM_TOLERANCE = JUMP_LENGTH * 0.01;
 
+const MAX_X_SPEED = 1;
+
 console.log(BOTTOM_TOLERANCE);
 
 export default class Frog extends THREE.Mesh {
@@ -33,24 +35,58 @@ export default class Frog extends THREE.Mesh {
 
   update(mouseX, width, speed, turtles, autoplay) {
     if (autoplay) {
-      if (this.jumpProgress > 20 && this.jumpProgress < 22) {
-        const nextTurtle = this.getClosestTurtle(turtles);
-        console.log("chose", nextTurtle.name);
-        this.position.x = nextTurtle.position.x;
-      }
+      this.doAutoPlay(turtles);
     } else {
-      // Map the mouse to screen position
-      this.position.x = mouseX / width * EDGE_OF_SCREEN * 2 - EDGE_OF_SCREEN;
-
-      // Lock movement within acceptable range
-      this.position.x = Math.min(
-        MAX_X_TRAVEL,
-        Math.max(-MAX_X_TRAVEL, this.position.x)
-      );
+      this.doMouseMove(mouseX, width);
     }
 
     this.jumpProgress += speed;
 
+    this.detectCollision(turtles);
+
+    if (this.jumpProgress > JUMP_LENGTH) {
+      this.jumpProgress -= JUMP_LENGTH;
+    }
+
+    this.doBounce();
+  }
+
+  doAutoPlay(turtles) {
+    if (this.jumpProgress > 20 && this.jumpProgress < 22) {
+      const nextTurtle = this.getClosestTurtle(turtles);
+      console.log("chose", nextTurtle.name);
+      this.position.x = nextTurtle.position.x;
+    }
+  }
+
+  doMouseMove(mouseX, width) {
+    // // Map the mouse to screen position
+    // this.position.x = mouseX / width * EDGE_OF_SCREEN * 2 - EDGE_OF_SCREEN;
+
+    // // Lock movement within acceptable range
+    // this.position.x = Math.min(
+    //   MAX_X_TRAVEL,
+    //   Math.max(-MAX_X_TRAVEL, this.position.x)
+    // );
+
+    // Mouse move with lerp
+    // Map the mouse to screen position
+    let target = mouseX / width * EDGE_OF_SCREEN * 2 - EDGE_OF_SCREEN;
+
+    // Lock the target within acceptable range
+    target = Math.min(MAX_X_TRAVEL, Math.max(-MAX_X_TRAVEL, target));
+
+    const distance = this.position.x - target;
+    if (Math.abs(distance) < MAX_X_SPEED) {
+      this.position.x = target;
+    } else if (distance < 0) {
+      this.position.x += MAX_X_SPEED;
+    } else if (distance > 0) {
+      this.position.x -= MAX_X_SPEED;
+    }
+  }
+
+  detectCollision(turtles) {
     if (Math.abs(JUMP_LENGTH - this.jumpProgress) < BOTTOM_TOLERANCE) {
       // Test for collision
 
@@ -60,11 +96,9 @@ export default class Frog extends THREE.Mesh {
       }
       console.log(this.jumpProgress, "found turtle", turtle);
     }
+  }
 
-    if (this.jumpProgress > JUMP_LENGTH) {
-      this.jumpProgress -= JUMP_LENGTH;
-    }
-
+  doBounce() {
     const radians = reMap(this.jumpProgress, 0, JUMP_LENGTH, 0, Math.PI);
     this.position.y = FLOOR + Math.sin(radians) * MAX_JUMP_HEIGHT;
   }

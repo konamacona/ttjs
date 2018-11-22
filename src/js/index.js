@@ -44,6 +44,8 @@ class Application {
 
   firstTimeInit() {
     this.autoplay = false;
+    this.ignoreFailure = false;
+
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87ceeb);
     this.setupRenderer();
@@ -136,9 +138,11 @@ class Application {
         this.autoplay
       );
     } catch (e) {
-      this.pause = true;
-      console.error(e);
-      alert("game over click restart in the top right to reset");
+      if (!this.ignoreFailure) {
+        this.pause = true;
+        console.error(e);
+        alert("game over click restart in the top right to reset");
+      }
     }
   }
 
@@ -234,9 +238,12 @@ class Application {
       .add(this, "runSpeed")
       .name("Speed")
       .min(0)
-      .max(4);
+      .max(4)
+      .listen();
 
     gui.add(this, "autoplay").name("Autoplay");
+    gui.add(this, "ignoreFailure").name("Don't Die");
+
     gui.add(this, "resetGame").name("Restart");
     gui.add(this, "setupControls").name("Add Orbital Controlls");
   }
