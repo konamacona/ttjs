@@ -56,6 +56,13 @@ class Application {
     document.onmousemove = e => {
       this.cursorX = e.pageX;
     };
+    document.addEventListener("touchstart", e => this.onTouch(e));
+    document.addEventListener("touchmove", e => this.onTouch(e));
+  }
+
+  onTouch() {
+    event.preventDefault();
+    this.cursorX = event.changedTouches[0].clientX; // / window.innerWidth * 2 - 1;
   }
 
   resetGame() {
