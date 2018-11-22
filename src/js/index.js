@@ -43,7 +43,7 @@ class Application {
   }
 
   firstTimeInit() {
-    this.autoplay = true;
+    this.autoplay = false;
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87ceeb);
     this.setupRenderer();
