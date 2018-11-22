@@ -13,11 +13,7 @@ const PERIOD = 50;
 const JUMP_LENGTH = PERIOD / 2;
 const MAX_JUMP_HEIGHT = 10;
 
-const BOTTOM_TOLERANCE = JUMP_LENGTH * 0.01;
-
 const MAX_X_SPEED = 1;
-
-console.log(BOTTOM_TOLERANCE);
 
 export default class Frog extends THREE.Mesh {
   constructor() {
@@ -31,20 +27,21 @@ export default class Frog extends THREE.Mesh {
     this.jumpProgress = 0;
 
     this.position.set(0, FLOOR, 75);
+
+    this.score = 0;
   }
 
-  update(mouseX, width, speed, turtles, autoplay) {
+  update(mouseX, width, speed, delta, turtles, autoplay) {
     if (autoplay) {
       this.doAutoPlay(turtles);
     } else {
       this.doMouseMove(mouseX, width);
     }
 
-    this.jumpProgress += speed;
-
-    this.detectCollision(turtles);
+    this.jumpProgress += delta * speed;
 
     if (this.jumpProgress > JUMP_LENGTH) {
+      this.detectCollision(turtles);
       this.jumpProgress -= JUMP_LENGTH;
     }
 
@@ -54,7 +51,6 @@ export default class Frog extends THREE.Mesh {
   doAutoPlay(turtles) {
     if (this.jumpProgress > 20 && this.jumpProgress < 22) {
       const nextTurtle = this.getClosestTurtle(turtles);
-      console.log("chose", nextTurtle.name);
       this.position.x = nextTurtle.position.x;
     }
   }
@@ -82,15 +78,16 @@ export default class Frog extends THREE.Mesh {
   }
 
   detectCollision(turtles) {
-    if (Math.abs(JUMP_LENGTH - this.jumpProgress) < BOTTOM_TOLERANCE) {
-      // Test for collision
-
-      const turtle = this.getClosestTurtle(turtles);
-      if (!turtle || !this.collidesWithTurtle(turtle)) {
-        throw new Error(this.jumpProgress + "no collide");
-      }
-      console.log(this.jumpProgress, "found turtle", turtle);
+    const turtle = this.getClosestTurtle(turtles);
+    if (!turtle || !this.collidesWithTurtle(turtle)) {
+      throw new Error(this.jumpProgress + "no collide");
     }
+    this.score += 1;
+    console.log(
+      `Bounce ${this.score}, Jump Progress ${this.jumpProgress}, Hit turtle ${
+        turtle.name
+      }, turtle z: ${turtle.position.z}`
+    );
   }
 
   doBounce() {
@@ -110,9 +107,8 @@ export default class Frog extends THREE.Mesh {
   }
 
   collidesWithTurtle(turtle) {
-    return (
-      turtle.isAroundX(this.position.x, RADIUS / 2) &&
-      turtle.isAroundZ(this.position.z)
-    );
+    const distance = dist(turtle.position, this.position);
+    console.log("distance", distance);
+    return distance < RADIUS + 2;
   }
 }

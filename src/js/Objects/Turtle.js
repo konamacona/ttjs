@@ -35,19 +35,14 @@ export default class Turtle extends THREE.Mesh {
   }
 
   isAroundX(xValue, extraLeeway) {
-    console.log(
-      this.position.x - SIZE / 2 - extraLeeway,
-      xValue,
-      this.position.x + SIZE / 2 + extraLeeway
-    );
     return (
       xValue < this.position.x + SIZE / 2 + extraLeeway &&
       xValue > this.position.x - SIZE / 2 - extraLeeway
     );
   }
 
-  update(speed) {
-    this.position.z += speed || 0.3;
+  update(speed, delta) {
+    this.position.z += delta * speed;
     if (this.position.z > DISSAPEAR_OFFSET) {
       this.position.x = this.getRandomX();
       this.position.z = this.getResetZ();

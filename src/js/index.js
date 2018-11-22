@@ -15,12 +15,13 @@ import TestCustomObject from "./Objects/TestCustomObject";
 
 require("../sass/home.sass");
 
+const INITIAL_SPEED = 25; // Units / s
+const SPEED_INCREMENT = 0.25; // increase  in units / s
+
 class Application {
   constructor(opts = {}) {
     this.width = Math.min(window.innerWidth, 400);
     this.height = Math.min(window.innerHeight, 600);
-
-    this.runSpeed = 0.5;
 
     if (opts.container) {
       this.container = opts.container;
@@ -43,8 +44,9 @@ class Application {
   }
 
   firstTimeInit() {
-    this.autoplay = false;
+    this.autoplay = true;
     this.ignoreFailure = false;
+    this.runSpeed = INITIAL_SPEED;
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87ceeb);
@@ -79,16 +81,18 @@ class Application {
 
   resetGame() {
     this.pause = false;
+    this.runSpeed = INITIAL_SPEED;
+    this.clock = new THREE.Clock();
 
     // Remove any existing objects from the scene
     this.clearScene();
 
     this.setupLights();
 
-    this.floor = new Floor();
+    this.floor = new Floor(this.clock);
     this.scene.add(this.floor);
 
-    this.frog = new Frog();
+    this.frog = new Frog(this.clock);
     this.scene.add(this.frog);
 
     this.turtles = this.setUpTurtles();
@@ -107,7 +111,12 @@ class Application {
     const OFFSET_PER_TURTLE = 25;
     for (let i = 0; i < NUM_TURTLES; i++) {
       turtles.push(
-        new Turtle(i, OFFSET_PER_TURTLE, (NUM_TURTLES - 1) * OFFSET_PER_TURTLE)
+        new Turtle(
+          i,
+          OFFSET_PER_TURTLE,
+          (NUM_TURTLES - 1) * OFFSET_PER_TURTLE,
+          this.clock
+        )
       );
     }
     return turtles;
@@ -131,15 +140,17 @@ class Application {
   }
 
   updateGameState() {
-    this.runSpeed += 0.0001;
-    this.floor.update(this.runSpeed);
-    this.turtles.forEach(t => t.update(this.runSpeed));
+    const delta = this.clock.getDelta();
+    this.runSpeed += SPEED_INCREMENT * delta;
+    this.floor.update(this.runSpeed, delta);
+    this.turtles.forEach(t => t.update(this.runSpeed, delta));
 
     try {
       this.frog.update(
         this.cursorX,
         this.width,
         this.runSpeed,
+        delta,
         this.turtles,
         this.autoplay
       );
@@ -244,7 +255,7 @@ class Application {
       .add(this, "runSpeed")
       .name("Speed")
       .min(0)
-      .max(4)
+      .max(100)
       .listen();
 
     gui.add(this, "autoplay").name("Autoplay");

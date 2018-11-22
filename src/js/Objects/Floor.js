@@ -28,13 +28,14 @@ export default class Floor extends THREE.Mesh {
 
     super(geometry, material);
     this.name = "floor";
+
     this.position.z = 0;
     this.position.y = -0.5;
     this.rotation.x = Math.PI / 2;
   }
 
-  update(speed) {
-    this.position.z += speed || 0.3;
+  update(speed, delta) {
+    this.position.z += delta * speed;
 
     // TODO: Wander in the x axis to create moving water effect
 
