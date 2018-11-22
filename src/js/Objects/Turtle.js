@@ -11,7 +11,7 @@ export default class Turtle extends THREE.Mesh {
     const geometry = new THREE.CubeGeometry(side, side / 2, side);
     const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
     super(geometry, material);
-    this.name = `frog_${i}`;
+    this.name = `turtle_${i}`;
     this.offset = -offset;
     this.movementBeforeReset = -movementBeforeReset;
     // console.log("turtle created at ", START_OFFSET + i * this.offset);

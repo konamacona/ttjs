@@ -143,7 +143,8 @@ module.exports = {
 
   devServer: {
     host: "localhost",
-    port: 8080,
+    port: 4000,
+
     contentBase: path.join(__dirname, "docs"),
     inline: true, // live reloading
     stats: {

@@ -1,3 +1,5 @@
+require("../css/index.scss");
+
 import * as THREE from "three";
 // TODO: OrbitControls import three.js on its own, so the webpack bundle includes three.js twice!
 import OrbitControls from "orbit-controls-es6";
@@ -30,7 +32,8 @@ class Application {
 
     if (Detector.webgl) {
       this.firstTimeInit();
-      this.startGame();
+      this.resetGame();
+      this.render();
     } else {
       // TODO: style warning message
       console.log("WebGL NOT supported in your browser!");
@@ -40,12 +43,13 @@ class Application {
   }
 
   firstTimeInit() {
+    this.autoplay = false;
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87ceeb);
     this.setupRenderer();
     this.setupCamera();
     this.setupHelpers();
-    this.setupControls();
+    // this.setupControls();
     this.setupGUI();
 
     this.cursorX = 0;
@@ -54,12 +58,9 @@ class Application {
     };
   }
 
-  startGame() {
-    this.resetGame();
-    this.render();
-  }
-
   resetGame() {
+    this.pause = false;
+
     // Remove any existing objects from the scene
     this.clearScene();
 
@@ -94,19 +95,38 @@ class Application {
   }
 
   render() {
-    // this.controls.update();
-    this.floor.update(this.runSpeed);
-    this.turtles.forEach(t => t.update(this.runSpeed));
+    if (this.controls) {
+      this.controls.update();
+    }
+
+    if (!this.pause) {
+      this.updateGameState();
+    }
+
     this.renderer.render(this.scene, this.camera);
 
-    try {
-      this.frog.update(this.cursorX, this.width, this.runSpeed, this.turtles);
+    // when render is invoked via requestAnimationFrame(this.render) there is
+    // no 'this', so either we bind it explicitly or use an es6 arrow function.
+    // requestAnimationFrame(this.render.bind(this));
+    requestAnimationFrame(() => this.render());
+  }
 
-      // when render is invoked via requestAnimationFrame(this.render) there is
-      // no 'this', so either we bind it explicitly or use an es6 arrow function.
-      // requestAnimationFrame(this.render.bind(this));
-      requestAnimationFrame(() => this.render());
+  updateGameState() {
+    this.runSpeed += 0.0001;
+    this.floor.update(this.runSpeed);
+    this.turtles.forEach(t => t.update(this.runSpeed));
+
+    try {
+      this.frog.update(
+        this.cursorX,
+        this.width,
+        this.runSpeed,
+        this.turtles,
+        this.autoplay
+      );
     } catch (e) {
+      this.pause = true;
+      console.error(e);
       alert("game over click restart in the top right to reset");
     }
   }
@@ -174,11 +194,11 @@ class Application {
   }
 
   setupControls() {
-    // this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    // this.controls.enabled = true;
-    // this.controls.maxDistance = 1500;
-    // this.controls.minDistance = 0;
-    // this.controls.autoRotate = false;
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enabled = true;
+    this.controls.maxDistance = 1500;
+    this.controls.minDistance = 0;
+    this.controls.autoRotate = false;
   }
 
   setupGUI() {
@@ -205,7 +225,9 @@ class Application {
       .min(0)
       .max(4);
 
-    gui.add(this, "startGame").name("Restart");
+    gui.add(this, "autoplay").name("Autoplay");
+    gui.add(this, "resetGame").name("Restart");
+    gui.add(this, "setupControls").name("Add Orbital Controlls");
   }
 
   setupCustomObject() {
