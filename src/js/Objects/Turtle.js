@@ -11,6 +11,7 @@ export default class Turtle extends THREE.Mesh {
     const geometry = new THREE.CubeGeometry(side, side / 2, side);
     const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
     super(geometry, material);
+    this.name = `frog_${i}`;
     this.offset = -offset;
     this.movementBeforeReset = -movementBeforeReset;
     // console.log("turtle created at ", START_OFFSET + i * this.offset);
@@ -25,6 +26,24 @@ export default class Turtle extends THREE.Mesh {
 
   getRandomX() {
     return Math.random() * 2 * MAX_X_OFFSET - MAX_X_OFFSET;
+  }
+
+  isAroundZ(zValue) {
+    return (
+      zValue < this.position.z + SIZE / 2 && zValue > this.position.z - SIZE / 2
+    );
+  }
+
+  isAroundX(xValue, extraLeeway) {
+    console.log(
+      this.position.x - SIZE / 2 - extraLeeway,
+      xValue,
+      this.position.x + SIZE / 2 + extraLeeway
+    );
+    return (
+      xValue < this.position.x + SIZE / 2 + extraLeeway &&
+      xValue > this.position.x - SIZE / 2 - extraLeeway
+    );
   }
 
   update(speed) {

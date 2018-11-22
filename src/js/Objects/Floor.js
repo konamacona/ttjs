@@ -27,6 +27,7 @@ export default class Floor extends THREE.Mesh {
     });
 
     super(geometry, material);
+    this.name = "floor";
     this.position.z = 0;
     this.position.y = -0.5;
     this.rotation.x = Math.PI / 2;

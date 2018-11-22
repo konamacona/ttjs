@@ -29,8 +29,8 @@ class Application {
     }
 
     if (Detector.webgl) {
-      this.init();
-      this.render();
+      this.firstTimeInit();
+      this.startGame();
     } else {
       // TODO: style warning message
       console.log("WebGL NOT supported in your browser!");
@@ -39,28 +39,46 @@ class Application {
     }
   }
 
-  init() {
+  firstTimeInit() {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87ceeb);
     this.setupRenderer();
     this.setupCamera();
-    this.setupLights();
     this.setupHelpers();
-    this.floor = new Floor();
-    this.scene.add(this.floor);
     this.setupControls();
     this.setupGUI();
+
+    this.cursorX = 0;
+    document.onmousemove = e => {
+      this.cursorX = e.pageX;
+    };
+  }
+
+  startGame() {
+    this.resetGame();
+    this.render();
+  }
+
+  resetGame() {
+    // Remove any existing objects from the scene
+    this.clearScene();
+
+    this.setupLights();
+
+    this.floor = new Floor();
+    this.scene.add(this.floor);
 
     this.frog = new Frog();
     this.scene.add(this.frog);
 
     this.turtles = this.setUpTurtles();
     this.turtles.forEach(t => this.scene.add(t));
+  }
 
-    this.cursorX = 0;
-    document.onmousemove = e => {
-      this.cursorX = e.pageX;
-    };
+  clearScene() {
+    while (this.scene.children.length) {
+      this.scene.remove(this.scene.children[0]);
+    }
   }
 
   setUpTurtles() {
@@ -76,16 +94,21 @@ class Application {
   }
 
   render() {
-    this.controls.update();
+    // this.controls.update();
     this.floor.update(this.runSpeed);
     this.turtles.forEach(t => t.update(this.runSpeed));
     this.renderer.render(this.scene, this.camera);
-    this.frog.update(this.cursorX, this.width, this.runSpeed);
 
-    // when render is invoked via requestAnimationFrame(this.render) there is
-    // no 'this', so either we bind it explicitly or use an es6 arrow function.
-    // requestAnimationFrame(this.render.bind(this));
-    requestAnimationFrame(() => this.render());
+    try {
+      this.frog.update(this.cursorX, this.width, this.runSpeed, this.turtles);
+
+      // when render is invoked via requestAnimationFrame(this.render) there is
+      // no 'this', so either we bind it explicitly or use an es6 arrow function.
+      // requestAnimationFrame(this.render.bind(this));
+      requestAnimationFrame(() => this.render());
+    } catch (e) {
+      alert("game over click restart in the top right to reset");
+    }
   }
 
   static createContainer() {
@@ -129,13 +152,11 @@ class Application {
 
   setupHelpers() {
     // floor grid helper
-    const gridHelper = new THREE.GridHelper(200, 16);
-    this.scene.add(gridHelper);
-
+    // const gridHelper = new THREE.GridHelper(200, 16);
+    // this.scene.add(gridHelper);
     // // XYZ axes helper (XYZ axes are RGB colors, respectively)
     // const axisHelper = new THREE.AxisHelper(75);
     // this.scene.add(axisHelper);
-
     // // directional light helper + shadow camera helper
     // const dirLightHelper = new THREE.DirectionalLightHelper(this.dirLight, 10);
     // this.scene.add(dirLightHelper);
@@ -143,7 +164,6 @@ class Application {
     //   this.dirLight.shadow.camera
     // );
     // this.scene.add(dirLightCameraHelper);
-
     // // spot light helper + shadow camera helper
     // const spotLightHelper = new THREE.SpotLightHelper(this.spotLight);
     // this.scene.add(spotLightHelper);
@@ -154,11 +174,11 @@ class Application {
   }
 
   setupControls() {
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.enabled = true;
-    this.controls.maxDistance = 1500;
-    this.controls.minDistance = 0;
-    this.controls.autoRotate = false;
+    // this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    // this.controls.enabled = true;
+    // this.controls.maxDistance = 1500;
+    // this.controls.minDistance = 0;
+    // this.controls.autoRotate = false;
   }
 
   setupGUI() {
@@ -184,6 +204,8 @@ class Application {
       .name("Speed")
       .min(0)
       .max(4);
+
+    gui.add(this, "startGame").name("Restart");
   }
 
   setupCustomObject() {

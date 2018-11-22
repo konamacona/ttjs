@@ -8,6 +8,6 @@ export default class MainCamera extends THREE.PerspectiveCamera {
     const far = 10000;
 
     super(fov, aspect, near, far);
-    this.position.set(0, 10, 100);
+    this.position.set(0, 10, 95);
   }
 }
