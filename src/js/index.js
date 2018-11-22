@@ -43,7 +43,7 @@ class Application {
   }
 
   firstTimeInit() {
-    this.autoplay = false;
+    this.autoplay = true;
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87ceeb);
     this.setupRenderer();
@@ -54,15 +54,19 @@ class Application {
 
     this.cursorX = 0;
     document.onmousemove = e => {
+      e.preventDefault();
       this.cursorX = e.pageX;
+      return false;
     };
     document.addEventListener("touchstart", e => this.onTouch(e));
     document.addEventListener("touchmove", e => this.onTouch(e));
   }
 
-  onTouch() {
+  onTouch(event) {
+    console.log(event);
     event.preventDefault();
     this.cursorX = event.changedTouches[0].clientX; // / window.innerWidth * 2 - 1;
+    return false;
   }
 
   resetGame() {
