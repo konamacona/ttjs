@@ -62,12 +62,18 @@ class Application {
     };
     document.addEventListener("touchstart", e => this.onTouch(e));
     document.addEventListener("touchmove", e => this.onTouch(e));
+    document.addEventListener("touchend", e => this.onTouchEnd(e));
   }
 
   onTouch(event) {
-    console.log(event);
     event.preventDefault();
-    this.cursorX = event.changedTouches[0].clientX; // / window.innerWidth * 2 - 1;
+    this.cursorX = event.changedTouches[0].clientX;
+    return false;
+  }
+
+  onTouchEnd(event) {
+    event.preventDefault();
+    this.cursorX = null;
     return false;
   }
 

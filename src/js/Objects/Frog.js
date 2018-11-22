@@ -60,14 +60,9 @@ export default class Frog extends THREE.Mesh {
   }
 
   doMouseMove(mouseX, width) {
-    // // Map the mouse to screen position
-    // this.position.x = mouseX / width * EDGE_OF_SCREEN * 2 - EDGE_OF_SCREEN;
-
-    // // Lock movement within acceptable range
-    // this.position.x = Math.min(
-    //   MAX_X_TRAVEL,
-    //   Math.max(-MAX_X_TRAVEL, this.position.x)
-    // );
+    if (!mouseX) {
+      return;
+    }
 
     // Mouse move with lerp
     // Map the mouse to screen position
